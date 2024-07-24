@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recommandation d'Articles</title>
+</head>
+<body>
+    <h1>Recommandation d'Articles</h1>
+    <form action="/recommend/collaborative" method="get">
+        <label for="user_id">ID Utilisateur (Collaboratif):</label>
+        <input type="text" id="user_id" name="user_id">
+        <input type="submit" value="Obtenir des Recommandations">
+    </form>
+    <br>
+    <form action="/recommend/content" method="get">
+        <label for="user_id">ID Utilisateur (Basé sur le Contenu):</label>
+        <input type="text" id="user_id" name="user_id">
+        <input type="submit" value="Obtenir des Recommandations">
+    </form>
+    <br>
+    <form action="/recommend/hybrid" method="get">
+        <label for="user_id">ID Utilisateur (Hybride):</label>
+        <input type="text" id="user_id" name="user_id">
+        <input type="submit" value="Obtenir des Recommandations">
+    </form>
+</body>
+</html>
