@@ -7,22 +7,27 @@
 </head>
 <body>
     <h1>Recommandation d'Articles</h1>
-    <form action="/recommend/collaborative" method="get">
-        <label for="user_id">ID Utilisateur (Collaboratif):</label>
-        <input type="text" id="user_id" name="user_id">
+    <form action="/recommend" method="post">
+        <label for="user_id">ID Utilisateur:</label>
+        <input type="text" id="user_id" name="user_id"><br><br>
+        <label for="article_id">ID Article:</label>
+        <input type="text" id="article_id" name="article_id"><br><br>
+        <label for="rec_type">Type de Recommandation:</label>
+        <select id="rec_type" name="rec_type">
+            <option value="collaborative">Collaboratif</option>
+            <option value="content">Basé sur le Contenu</option>
+            <option value="hybrid">Hybride</option>
+        </select><br><br>
         <input type="submit" value="Obtenir des Recommandations">
     </form>
-    <br>
-    <form action="/recommend/content" method="get">
-        <label for="user_id">ID Utilisateur (Basé sur le Contenu):</label>
-        <input type="text" id="user_id" name="user_id">
-        <input type="submit" value="Obtenir des Recommandations">
-    </form>
-    <br>
-    <form action="/recommend/hybrid" method="get">
-        <label for="user_id">ID Utilisateur (Hybride):</label>
-        <input type="text" id="user_id" name="user_id">
-        <input type="submit" value="Obtenir des Recommandations">
-    </form>
+
+    {% if recommendations %}
+        <h2>Recommandations:</h2>
+        <ul>
+            {% for rec in recommendations %}
+                <li>{{ rec }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 </body>
 </html>
