@@ -7,3 +7,4 @@ docs/*
 list_file.txt
 ._retour.txt
 retour.txt
+azure_functions/train/.venv
