@@ -15,6 +15,5 @@
       }
     ],
     "scriptFile": "function.py",
-    "entryPoint": "train"
+    "entryPoint": "main"
   }
-  
