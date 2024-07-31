@@ -6,8 +6,9 @@ name: Build and deploy Python project to Azure Function App - cfmodel
 
 on:
   push:
-    branches:
-      - main
+    paths:
+      - 'azure_functions/train/**'
+      - 'scripts/collaborative_filtering.py'
   workflow_dispatch:
 
 env:
