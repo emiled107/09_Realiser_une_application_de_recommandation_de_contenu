@@ -1,4 +1,4 @@
-azure-functions
+azure-functions==1.13.3
 azure-storage-blob
 pandas
 scikit-learn
