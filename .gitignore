@@ -5,3 +5,5 @@ notebooks/mlruns
 notebooks/models/*
 docs/*
 list_file.txt
+._retour.txt
+retour.txt
