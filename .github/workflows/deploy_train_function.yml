@@ -29,7 +29,7 @@ jobs:
     - name: Deploy Function
       uses: Azure/functions-action@v1
       with:
-        app-name: trainmodelv1
+        app-name: modeltrain2
         package: azure_functions/train
         publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_68FF7B1DD4C7469B8FA2909F95AAAC72 }}
 
