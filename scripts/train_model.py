@@ -1,17 +1,17 @@
-import pandas as pd
-from sklearn.externals import joblib
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+# train_model.py
+from collaborative_filtering import CollaborativeFiltering
 
-# Chargement des données
-articles = pd.read_csv('data/articles.csv')
-user_interactions = pd.read_csv('data/user_interactions.csv')
+def main():
+    articles_metadata_path = '../data/articles_metadata.csv'
+    clicks_path = '../data/clicks'
 
-# Prétraitement des données
-# ... (votre logique de prétraitement ici)
+    # Initialisation et entraînement du modèle
+    cf = CollaborativeFiltering(articles_metadata_path, clicks_path)
+    clicks_df, _ = cf.load_data()
+    clicks_df = cf.clean_and_prepare_data(clicks_df)
+    interaction_matrix = cf.build_interaction_matrix(clicks_df)
+    cf.train_model(interaction_matrix)
+    cf.save_model('svd_model.joblib')
 
-# Entraînement du modèle
-# ... (votre logique d'entraînement de modèle ici)
-
-# Sauvegarde du modèle
-joblib.dump(model, 'models/recommender_model.pkl')
+if __name__ == '__main__':
+    main()

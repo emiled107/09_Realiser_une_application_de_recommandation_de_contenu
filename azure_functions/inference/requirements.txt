@@ -1,0 +1,7 @@
+azure-functions
+pandas
+numpy
+scikit-learn
+joblib
+azure-storage-blob
+mlflow

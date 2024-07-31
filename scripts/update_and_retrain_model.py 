@@ -1,0 +1,16 @@
+# update_and_retrain_model.py
+from collaborative_filtering import CollaborativeFiltering
+
+def main():
+    articles_metadata_path = '../data/articles_metadata.csv'
+    clicks_path = '../data/clicks'
+
+    # Chargement du modèle et mise à jour des données
+    cf = CollaborativeFiltering(articles_metadata_path, clicks_path)
+    cf.load_model('svd_model.joblib')
+    cf.update_data()
+    cf.retrain_model()
+    cf.save_model('svd_model_updated.joblib')
+
+if __name__ == '__main__':
+    main()

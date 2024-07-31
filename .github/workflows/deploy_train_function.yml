@@ -2,14 +2,12 @@ name: Deploy Azure Function
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    paths:
+      - 'azure_functions/train/**'
+      - 'scripts/collaborative_filtering.py'
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -21,17 +19,19 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install -r azure_functions/upmodel/requirements.txt
+        pip install azure-functions
 
     - name: Azure Login
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Deploy to Azure Function
+    - name: Deploy Function
       uses: Azure/functions-action@v1
       with:
-        app-name: upmodel
-        package: azure_functions/upmodel
-        publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+        app-name: trainmodelv1
+        package: azure_functions/train
+        publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_68FF7B1DD4C7469B8FA2909F95AAAC72 }}
+
+    - name: Azure Logout
+      run: az logout

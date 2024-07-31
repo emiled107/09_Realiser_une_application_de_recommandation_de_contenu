@@ -4,3 +4,4 @@ __init__.py
 notebooks/mlruns
 notebooks/models/*
 docs/*
+list_file.txt
