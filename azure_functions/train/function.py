@@ -1,12 +1,17 @@
 import azure.functions as func
 from azure.storage.blob import BlobServiceClient
-from collaborative_filtering import CollaborativeFiltering
 import pandas as pd
 from io import BytesIO
 import json
+import logging
 
-def main(req: func.HttpRequest) -> func.HttpResponse:
+def train(req: func.HttpRequest) -> func.HttpResponse:
     try:
+        # Connexion à Azure Blob Storage
+        connect_str = os.getenv('AZURE_STORAGE_CONNECTION_STRING')
+        blob_service_client = BlobServiceClient.from_connection_string(connect_str)
+        container_name = "projet09"
+
         # Lecture des fichiers envoyés via multipart/form-data
         articles_metadata = req.files['articles_metadata']
         clicks = req.files['clicks']
@@ -15,34 +20,24 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         articles_metadata_df = pd.read_csv(BytesIO(articles_metadata.read()))
         clicks_df = pd.read_csv(BytesIO(clicks.read()))
 
-        # Initialisation de l'instance CollaborativeFiltering
-        cf = CollaborativeFiltering(None, None)
-        cf.clicks_df = clicks_df
-        cf.articles_metadata_df = articles_metadata_df
+        # Utiliser le DataFrame pour quelque traitement, ici juste un exemple
+        # Traitement hypothétique, remplacez par votre logique
+        processed_data = process_data(articles_metadata_df, clicks_df)
 
-        # Exécution du pipeline d'entraînement
-        training_results = cf.run_pipeline()  # Assurez-vous que cette méthode renvoie des informations sur l'entraînement
+        # Enregistrement du DataFrame traité dans Blob Storage
+        save_data_to_blob(blob_service_client, container_name, processed_data)
 
-        # Connexion à Azure Blob Storage
-        connect_str = os.getenv('AZURE_STORAGE_CONNECTION_STRING')
-        blob_service_client = BlobServiceClient.from_connection_string(connect_str)
-        container_name = "your-container-name"
+        return func.HttpResponse("Traitement réussi et données sauvegardées", status_code=200)
 
-        # Transfert du modèle SVD
-        with open("svd_model.joblib", "rb") as model_file:
-            model_blob_client = blob_service_client.get_blob_client(container=container_name, blob="svd_model.joblib")
-            model_blob_client.upload_blob(model_file, overwrite=True)
-
-        # Transfert de la matrice d'interaction
-        with open("user_article_matrix.csv", "rb") as matrix_file:
-            matrix_blob_client = blob_service_client.get_blob_client(container=container_name, blob="user_article_matrix.csv")
-            matrix_blob_client.upload_blob(matrix_file, overwrite=True)
-
-        # Créer un message de retour avec les résultats de l'entraînement
-        response_message = {
-            "message": "Modèle et matrice initialisés et entraînés avec succès, et sauvegardés dans Blob Storage.",
-            "training_details": training_results
-        }
-        return func.HttpResponse(json.dumps(response_message), status_code=200)
     except Exception as e:
-        return func.HttpResponse(f"Erreur: {str(e)}", status_code=500)
+        logging.error(f"Erreur lors du traitement: {str(e)}")
+        return func.HttpResponse(f"Erreur lors du traitement: {str(e)}", status_code=500)
+
+def process_data(articles_df, clicks_df):
+    return articles_df.merge(clicks_df, on="article_id")
+
+def save_data_to_blob(blob_service_client, container_name, data):
+    # Conversion du DataFrame en CSV et sauvegarde dans Blob Storage
+    blob_client = blob_service_client.get_blob_client(container=container_name, blob="processed_data.csv")
+    csv_data = data.to_csv(index=False)
+    blob_client.upload_blob(csv_data, overwrite=True)
