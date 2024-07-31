@@ -2,32 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recommandation d'Articles</title>
+    <title>Recommendation System</title>
 </head>
 <body>
-    <h1>Recommandation d'Articles</h1>
-    <form action="/recommend" method="post">
-        <label for="user_id">ID Utilisateur:</label>
-        <input type="text" id="user_id" name="user_id"><br><br>
-        <label for="article_id">ID Article:</label>
-        <input type="text" id="article_id" name="article_id"><br><br>
-        <label for="rec_type">Type de Recommandation:</label>
-        <select id="rec_type" name="rec_type">
-            <option value="collaborative">Collaboratif</option>
-            <option value="content">Basé sur le Contenu</option>
-            <option value="hybrid">Hybride</option>
-        </select><br><br>
-        <input type="submit" value="Obtenir des Recommandations">
+    <h1>Systeme de recommandation</h1>
+    <form id="user-form">
+        <input type="text" id="user_id" placeholder="Enter User ID">
+        <button type="submit">Get Recommendations</button>
     </form>
+    <div id="recommendations"></div>
 
-    {% if recommendations %}
-        <h2>Recommandations:</h2>
-        <ul>
-            {% for rec in recommendations %}
-                <li>{{ rec }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#user-form').submit(function(event) {
+                event.preventDefault();
+                var userId = $('#user_id').val();
+                $.post('/get-recommendations', { user_id: userId }, function(data) {
+                    $('#recommendations').html('<h2>Recommended Articles:</h2>' + JSON.stringify(data));
+                });
+            });
+        });
+    </script>
 </body>
 </html>
