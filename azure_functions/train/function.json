@@ -1,0 +1,20 @@
+{
+    "bindings": [
+      {
+        "authLevel": "function",
+        "type": "httpTrigger",
+        "direction": "in",
+        "name": "req",
+        "methods": ["post"],
+        "dataType": "binary"
+      },
+      {
+        "type": "http",
+        "direction": "out",
+        "name": "$return"
+      }
+    ],
+    "scriptFile": "function.py",
+    "entryPoint": "train"
+  }
+  
