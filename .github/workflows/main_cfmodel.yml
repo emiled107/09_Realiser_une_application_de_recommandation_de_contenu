@@ -64,7 +64,7 @@ jobs:
           name: python-app
 
       - name: Unzip artifact for deployment
-        run: unzip release.zip ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+        run: unzip release.zip -d ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
 
       - name: 'Deploy to Azure Functions'
         uses: Azure/functions-action@v1
