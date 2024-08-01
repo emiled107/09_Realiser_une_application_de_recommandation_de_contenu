@@ -5,6 +5,7 @@ import os
 from sklearn.decomposition import TruncatedSVD
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from scipy.stats import pearsonr
+from sklearn.preprocessing import LabelEncoder
 import mlflow
 import mlflow.sklearn  # Pour l'intégration avec MLflow
 import joblib  # Pour la sauvegarde du modèle
@@ -20,18 +21,29 @@ class CollaborativeFiltering:
         self.articles_metadata_df = None
 
     def load_data(self):
-        articles_metadata_df = pd.read_csv(self.articles_metadata_path)
-        if os.path.isfile(self.clicks_path):
-            clicks_df = pd.read_csv(self.clicks_path)
-        elif os.path.isdir(self.clicks_path):
-            clicks_dfs = []
-            for filename in os.listdir(self.clicks_path):
-                if filename.endswith('.csv'):
-                    file_path = os.path.join(self.clicks_path, filename)
-                    clicks_dfs.append(pd.read_csv(file_path))
-            clicks_df = pd.concat(clicks_dfs, ignore_index=True)
+        # Chargement des métadonnées des articles
+        if self.articles_metadata_path is not None:
+            articles_metadata_df = pd.read_csv(self.articles_metadata_path)
         else:
-            raise ValueError(f"Le chemin {self.clicks_path} n'est ni un fichier ni un répertoire valide.")
+            articles_metadata_df = None
+            
+        # Vérifier si clicks_path est un répertoire ou un fichier
+        if os.path.isdir(self.clicks_path):
+            # Lire tous les fichiers CSV dans le répertoire
+            clicks_df = pd.concat(
+                [pd.read_csv(os.path.join(self.clicks_path, f)) for f in os.listdir(self.clicks_path) if f.endswith('.csv')],
+                ignore_index=True
+            )
+        elif os.path.isfile(self.clicks_path):
+            # Charger directement le fichier si c'est un fichier unique
+            clicks_df = pd.read_csv(self.clicks_path)
+        else:
+            raise FileNotFoundError(f"Aucun fichier ou répertoire valide trouvé à {self.clicks_path}")
+
+        # Nettoyage des données de clics
+        clicks_df.drop_duplicates(inplace=True)
+        clicks_df.dropna(inplace=True)
+
         return clicks_df, articles_metadata_df
 
     def clean_and_prepare_data(self, clicks_df):
@@ -40,9 +52,20 @@ class CollaborativeFiltering:
         return clicks_df
 
     def build_interaction_matrix(self, clicks_df):
-        return pd.pivot_table(clicks_df, index='user_id', columns='click_article_id', aggfunc=len, fill_value=0)
+        # Encodage des IDs d'utilisateurs et d'articles
+        user_encoder = LabelEncoder()
+        article_encoder = LabelEncoder()
+        
+        clicks_df['user_id_encoded'] = user_encoder.fit_transform(clicks_df['user_id'])
+        clicks_df['article_id_encoded'] = article_encoder.fit_transform(clicks_df['click_article_id'])
+        
+        # Création de la matrice d'interaction
+        interaction_matrix = pd.pivot_table(clicks_df, index='user_id_encoded', columns='article_id_encoded', aggfunc='size', fill_value=0)
+        
+        return interaction_matrix
 
     def train_model(self, interaction_matrix):
+        self.user_article_matrix = interaction_matrix
         num_features = interaction_matrix.shape[1]
         n_components = min(self.n_components, num_features - 1)
         self.svd_model = TruncatedSVD(n_components=n_components)
@@ -114,9 +137,17 @@ class CollaborativeFiltering:
         logging.info("Données mises à jour avec de nouvelles interactions.")
 
     def load_user_article_matrix(self, matrix_path):
-        """ Charge la matrice d'interaction utilisateur-article depuis un fichier. """
-        self.user_article_matrix = pd.read_csv(matrix_path, index_col=0)
+        # Charger le CSV en spécifiant que la première colonne (user_id) ne doit pas être utilisée comme index
+        self.user_article_matrix = pd.read_csv(matrix_path, index_col=None)
+        
+        # Si nécessaire, renommer la première colonne en 'user_id' (au cas où le nom serait différent)
+        self.user_article_matrix.rename(columns={self.user_article_matrix.columns[0]: 'user_id'}, inplace=True)
+        
         logging.info(f"Matrice d'interaction chargée depuis {matrix_path}")
+        logging.info(f"Colonnes de la matrice : {self.user_article_matrix.columns}")
+        logging.info(f"Shape de la matrice : {self.user_article_matrix.shape}")
+        logging.info(f"Premières lignes de la matrice :\n{self.user_article_matrix.head()}")
+
 
     def save_user_article_matrix(self, matrix_path):
         """ Sauvegarde la matrice d'interaction utilisateur-article dans un fichier. """
@@ -136,6 +167,21 @@ class CollaborativeFiltering:
             logging.info("Modèle réentraîné avec succès.")
         else:
             logging.error("Aucune matrice d'interaction pour réentraîner le modèle.")
+
+    def recommend_articles(self, user_id, top_n=5):
+        if 'user_id' not in self.user_article_matrix.columns:
+            raise ValueError("La colonne 'user_id' n'existe pas dans la matrice.")
+        
+        user_index = self.user_article_matrix.index[self.user_article_matrix['user_id'] == user_id].tolist()
+        if not user_index:
+            raise ValueError(f"user_id {user_id} non trouvé dans la matrice.")
+        
+        user_interaction_matrix = self.user_article_matrix.loc[user_index].drop('user_id', axis=1).values
+        predictions = self.svd_model.transform(user_interaction_matrix)
+        predictions = self.svd_model.inverse_transform(predictions)
+        recommended_article_indices = np.argsort(-predictions.flatten())[:top_n]
+        return self.user_article_matrix.columns[recommended_article_indices + 1].tolist()  # +1 pour sauter la colonne 'user_id'
+
 
     def run_pipeline(self):
         """ Pipeline complet d'entraînement du modèle avec MLflow. """
