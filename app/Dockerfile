@@ -6,12 +6,7 @@ WORKDIR /app
 COPY . /app
 
 # Installer les dépendances système nécessaires
-RUN apt-get update && apt-get install -y \
-    pkg-config \
-    libhdf5-dev \
-    gcc \
-    g++ \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y 
 
 # Copier les fichiers de dépendances et installer les dépendances Python
 RUN pip install --no-cache-dir -r requirements.txt
