@@ -14,7 +14,6 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copier les fichiers de dépendances et installer les dépendances Python
-COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Exposer le port que l'application utilisera

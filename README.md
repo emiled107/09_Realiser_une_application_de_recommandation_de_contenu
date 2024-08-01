@@ -20,3 +20,22 @@ My Content est une start-up qui veut encourager la lecture en recommandant des c
 
 ```bash
 pip install -r app/requirements.txt
+
+
+Create a Resource Group
+If you don't already have a resource group, create one:
+
+bash
+Copier le code
+az group create --name MyResourceGroup --location eastus
+Create an App Service Plan
+You need an App Service plan to host your web app:
+
+az container create --resource-group MyResourceGroup \
+  --name mycontainerinstance \
+  --image emiled/recoapp:latest \
+  --cpu 1 \
+  --memory 1.5 \
+  --registry-login-server docker.io \
+  --dns-name-label myapplication \
+  --ports 5005
