@@ -5,13 +5,15 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    # Liste des IDs utilisateurs disponibles pour la sélection
+    user_ids = [i for i in range(707)]  # Adaptez cette liste selon vos données
+    return render_template('index.html', user_ids=user_ids)
 
 @app.route('/get-recommendations', methods=['POST'])
 def get_recommendations():
     user_id = request.form['user_id']
     # URL de la fonction Azure déployée
-    azure_function_url = 'https://your-azure-function-url.azurewebsites.net/api/GetRecommendations'
+    azure_function_url = 'https://cfmodel.azurewebsites.net/api/HttpTrigger_predict'
     # Appel à la fonction Azure avec l'ID utilisateur
     response = requests.post(azure_function_url, json={'user_id': user_id})
     recommendations = response.json()

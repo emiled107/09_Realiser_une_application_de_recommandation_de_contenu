@@ -5,9 +5,13 @@
     <title>Recommendation System</title>
 </head>
 <body>
-    <h1>Systeme de recommandation</h1>
+    <h1>Système de recommandation</h1>
     <form id="user-form">
-        <input type="text" id="user_id" placeholder="Enter User ID">
+        <select id="user_id">
+            {% for user_id in user_ids %}
+            <option value="{{ user_id }}">{{ user_id }}</option>
+            {% endfor %}
+        </select>
         <button type="submit">Get Recommendations</button>
     </form>
     <div id="recommendations"></div>
