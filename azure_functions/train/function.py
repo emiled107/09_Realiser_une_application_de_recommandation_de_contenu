@@ -1,5 +1,4 @@
 import azure.functions as func
-import json
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     if req.method == "POST":
