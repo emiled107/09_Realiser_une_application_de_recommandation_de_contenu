@@ -1,18 +1,24 @@
-# Utiliser une image de base Python officielle
-FROM python:3.9-slim
+FROM python:3.8-slim
 
 # Définir le répertoire de travail dans le conteneur
 WORKDIR /app
 
-# Copier les fichiers de dépendances et installer les dépendances
-COPY ./app/requirements.txt /app/
+COPY . /app
+
+# Installer les dépendances système nécessaires
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libhdf5-dev \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copier les fichiers de dépendances et installer les dépendances Python
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copier le reste de l'application
-COPY ./app /app
-
-# Exposer le port sur lequel l'application Flask s'exécute
+# Exposer le port que l'application utilisera
 EXPOSE 5000
 
-# Commande pour exécuter l'application
-CMD ["python", "app.py"]
+# Commande pour lancer l'application
+CMD ["sh", "-c", "python app.py"]
